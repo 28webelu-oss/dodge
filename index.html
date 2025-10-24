@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>VR Obstacle Avoidance Game</title>
+    <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
+    <style>
+        #introScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            font-family: Arial, sans-serif;
+            z-index: 2000;
+            text-align: center;
+        }
+        
+        #introScreen h1 {
+            font-size: 56px;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        #introScreen h2 {
+            font-size: 32px;
+            margin-bottom: 30px;
+            color: #FFD700;
+        }
+        
+        #introScreen .controls {
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px;
+            max-width: 600px;
+        }
+        
+        #introScreen .controls h3 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #FFD700;
+        }
+        
+        #introScreen .control-item {
+            font-size: 20px;
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        #introScreen .key {
+            background-color: #333;
+            padding: 5px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            min-width: 100px;
+            text-align: center;
+        }
+        
+        #introScreen .objective {
+            background-color: rgba(255, 0, 0, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px;
+            border: 2px solid #FF6B6B;
+            max-width: 600px;
+        }
+        
+        #introScreen .objective h3 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: #FF6B6B;
+        }
+        
+        #introScreen .objective p {
+            font-size: 18px;
+            line-height: 1.5;
+        }
+        
+        #startButton {
+            padding: 20px 40px;
+            font-size: 28px;
+            background: linear-gradient(45deg, #FF6B6B, #FF8E53);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            margin-top: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
+        }
+        
+        #startButton:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+        
+        #gameOverScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            font-family: Arial, sans-serif;
+            z-index: 1000;
+        }
+        
+        #gameOverScreen h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        
+        #gameOverScreen p {
+            font-size: 24px;
+            margin-bottom: 30px;
+        }
+        
+        #survivedTime {
+            font-size: 32px;
+            color: #FFD700;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+        
+        #restartButton {
+            padding: 15px 30px;
+            font-size: 20px;
+            background-color: #FF6B6B;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        
+        #restartButton:hover {
+            background-color: #FF5252;
+        }
+        
+        #gameUI {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: white;
+            font-family: Arial, sans-serif;
+            font-size: 24px;
+            z-index: 100;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 10px 15px;
+            border-radius: 5px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Intro Screen -->
+    <div id="introScreen">
+        <h1>🎮 VR OBSTACLE AVOIDANCE 🎮</h1>
+        <h2>Survive as long as you can!</h2>
+        
+        <div class="objective">
+            <h3>🎯 OBJECTIVE</h3>
+            <p>Dodge the incoming red spheres and stay on the platform! The longer you survive, the more challenging it becomes. How long can you last?</p>
+        </div>
+        
+        <div class="controls">
+            <h3>🎮 CONTROLS</h3>
+            <div class="control-item">
+                <span>Move Left</span>
+                <span class="key">A</span>
+            </div>
+            <div class="control-item">
+                <span>Move Right</span>
+                <span class="key">D</span>
+            </div>
+            <div class="control-item">
+                <span>Jump</span>
+                <span class="key">SPACE</span>
+            </div>
+            <div class="control-item">
+                <span>Crouch</span>
+                <span class="key">LEFT SHIFT</span>
+            </div>
+        </div>
+        
+        <button id="startButton" onclick="startGame()">🚀 START GAME 🚀</button>
+    </div>
+
+    <!-- Live Timer Display -->
+    <div id="gameUI">
+        <div>Time: <span id="liveTimer">0.0</span>s</div>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="gameOverScreen">
+        <h1>GAME OVER!</h1>
+        <p id="gameOverReason">You fell off the platform!</p>
+        <div id="survivedTime">You survived for: 0.0 seconds</div>
+        <button id="restartButton" onclick="restartGame()">Play Again</button>
+    </div>
+
+    <a-scene background="color: #87CEEB">
+        <!-- Player Character with Collision Detection -->
+        <a-entity id="player" 
+                  position="0 1.6 5"
+                  player-movement
+                  collision-detector>
+            <!-- Player Visual (simple capsule) -->
+            <a-capsule position="0 0 0" 
+                       radius="0.3" 
+                       height="1.6" 
+                       color="#FF6B6B"
+                       id="playerBody">
+            </a-capsule>
+            
+            <!-- Camera attached to player -->
+            <a-camera position="0 0.5 0" look-controls="enabled: false"></a-camera>
+        </a-entity>
+        
+        <!-- 20x20 Platform -->
+        <a-plane id="platform"
+                 position="0 0 0"
+                 rotation="-90 0 0"
+                 width="20"
+                 height="20"
+                 color="#4CC3D9"
+                 shadow="receive: true">
+        </a-plane>
+        
+        <!-- Container for obstacles -->
+        <a-entity id="obstacleContainer" obstacle-spawner></a-entity>
+        
+        <!-- Lighting -->
+        <a-light type="ambient" color="#404040"></a-light>
+        <a-light type="directional" 
+                 position="5 10 5" 
+                 color="#ffffff"
+                 shadow="cast: true">
+        </a-light>
+    </a-scene>
+
+    <script>
+        // Game state
+        let gameActive = false; // Start with game inactive
+        let gameStarted = false; // Track if game has been started
+        let obstacleData = []; // Store obstacle data separately for collision detection
+        let gameStartTime = Date.now(); // Track when game started
+        let survivalTime = 0; // Track total survival time
+        
+        // Start Game Function
+        function startGame() {
+            document.getElementById('introScreen').style.display = 'none';
+            document.getElementById('gameUI').style.display = 'block';
+            gameActive = true;
+            gameStarted = true;
+            gameStartTime = Date.now();
+            survivalTime = 0;
+        }
+        
+        // Timer update function
+        function updateTimer() {
+            if (gameActive && gameStarted) {
+                survivalTime = (Date.now() - gameStartTime) / 1000; // Convert to seconds
+                document.getElementById('liveTimer').textContent = survivalTime.toFixed(1);
+            }
+        }
+        
+        // Start timer updates
+        setInterval(updateTimer, 100); // Update every 100ms for smooth display
+        
+        // Game Over Function
+        function gameOver(reason) {
+            if (!gameActive) return;
+            
+            gameActive = false;
+            
+            // Calculate final survival time
+            survivalTime = (Date.now() - gameStartTime) / 1000;
+            
+            // Update game over screen
+            document.getElementById('gameOverReason').textContent = reason;
+            document.getElementById('survivedTime').textContent = `You survived for: ${survivalTime.toFixed(1)} seconds`;
+            document.getElementById('gameOverScreen').style.display = 'flex';
+            
+            const spawner = document.querySelector('[obstacle-spawner]');
+            if (spawner && spawner.components['obstacle-spawner']) {
+                spawner.components['obstacle-spawner'].gameActive = false;
+            }
+        }
+        
+        // Restart Game Function
+        function restartGame() {
+            gameActive = true;
+            obstacleData = []; // Clear obstacle data
+            gameStartTime = Date.now(); // Reset start time
+            survivalTime = 0; // Reset survival time
+            
+            // Hide game over screen
+            document.getElementById('gameOverScreen').style.display = 'none';
+            
+            // Reset live timer display
+            document.getElementById('liveTimer').textContent = '0.0';
+            
+            const player = document.getElementById('player');
+            player.setAttribute('position', '0 1.6 5');
+            
+            const obstacles = document.querySelectorAll('[obstacle-movement]');
+            obstacles.forEach(obstacle => obstacle.remove());
+            
+            const spawner = document.querySelector('[obstacle-spawner]');
+            if (spawner && spawner.components['obstacle-spawner']) {
+                const spawnerComponent = spawner.components['obstacle-spawner'];
+                spawnerComponent.gameActive = true;
+                spawnerComponent.obstacles = [];
+                spawnerComponent.spawnTimer = 0;
+                spawnerComponent.spawnInterval = 120;
+                spawnerComponent.obstacleId = 0;
+            }
+        }
+
+        // Collision Detection Component
+        AFRAME.registerComponent('collision-detector', {
+            init: function() {
+                this.player = this.el;
+                this.playerRadius = 0.3; // Match player capsule radius exactly
+            },
+            
+            tick: function() {
+                if (!gameActive) return;
+                
+                const playerPos = this.player.getAttribute('position');
+                
+                // Check if player fell off platform
+                if (playerPos.x < -10 || playerPos.x > 10 || 
+                    playerPos.z < -10 || playerPos.z > 10 || 
+                    playerPos.y < -2) {
+                    gameOver("You fell off the platform!");
+                    return;
+                }
+                
+                // Check collision with obstacles using stored data
+                for (let i = 0; i < obstacleData.length; i++) {
+                    const obstacle = obstacleData[i];
+                    
+                    // Calculate 2D distance (ignore Y for simpler collision)
+                    const dx = playerPos.x - obstacle.x;
+                    const dz = playerPos.z - obstacle.z;
+                    const distance2D = Math.sqrt(dx*dx + dz*dz);
+                    
+                    // Check Y overlap (height collision)
+                    const playerBottom = playerPos.y - 0.8; // Player height/2
+                    const playerTop = playerPos.y + 0.8;
+                    const obstacleBottom = obstacle.y - obstacle.radius; // Sphere bottom
+                    const obstacleTop = obstacle.y + obstacle.radius; // Sphere top
+                    
+                    const yOverlap = !(playerTop < obstacleBottom || playerBottom > obstacleTop);
+                    
+                    // Use exact sphere radius for collision detection
+                    const totalCollisionDistance = this.playerRadius + obstacle.radius;
+                    
+                    if (distance2D < totalCollisionDistance && yOverlap) {
+                        gameOver("You hit an obstacle!");
+                        return;
+                    }
+                }
+            }
+        });
+
+        // Player Movement Component
+        AFRAME.registerComponent('player-movement', {
+            init: function() {
+                this.keys = {};
+                this.player = this.el;
+                this.playerBody = document.querySelector('#playerBody');
+                
+                this.isGrounded = true;
+                this.jumpForce = 0;
+                this.gravity = -0.02;
+                this.moveSpeed = 0.15;
+                this.normalHeight = 1.6;
+                this.crouchHeight = 0.8;
+                this.isCrouching = false;
+                
+                this.setupKeyboardControls();
+            },
+            
+            setupKeyboardControls: function() {
+                document.addEventListener('keydown', (e) => {
+                    this.keys[e.code] = true;
+                });
+                
+                document.addEventListener('keyup', (e) => {
+                    this.keys[e.code] = false;
+                });
+            },
+            
+            tick: function() {
+                if (!gameActive) return;
+                
+                let position = this.player.getAttribute('position');
+                let bodyScale = this.playerBody.getAttribute('scale') || {x: 1, y: 1, z: 1};
+                
+                if (this.keys['KeyA']) {
+                    position.x -= this.moveSpeed;
+                }
+                if (this.keys['KeyD']) {
+                    position.x += this.moveSpeed;
+                }
+                
+                if (this.keys['Space'] && this.isGrounded) {
+                    this.jumpForce = 0.3;
+                    this.isGrounded = false;
+                }
+                
+                if (this.keys['ShiftLeft']) {
+                    if (!this.isCrouching) {
+                        this.isCrouching = true;
+                        bodyScale.y = 0.5;
+                        position.y = this.crouchHeight;
+                        this.playerBody.setAttribute('scale', bodyScale);
+                    }
+                } else {
+                    if (this.isCrouching) {
+                        this.isCrouching = false;
+                        bodyScale.y = 1;
+                        position.y = this.normalHeight;
+                        this.playerBody.setAttribute('scale', bodyScale);
+                    }
+                }
+                
+                if (!this.isGrounded) {
+                    position.y += this.jumpForce;
+                    this.jumpForce += this.gravity;
+                    
+                    if (position.y <= (this.isCrouching ? this.crouchHeight : this.normalHeight)) {
+                        position.y = this.isCrouching ? this.crouchHeight : this.normalHeight;
+                        this.isGrounded = true;
+                        this.jumpForce = 0;
+                    }
+                }
+                
+                this.player.setAttribute('position', position);
+            }
+        });
+
+        // Obstacle Spawner Component - Red Spheres Only
+        AFRAME.registerComponent('obstacle-spawner', {
+            init: function() {
+                this.obstacles = [];
+                this.spawnTimer = 0;
+                this.spawnInterval = 120;
+                this.obstacleSpeed = 0.08;
+                this.obstacleId = 0;
+                this.gameActive = true;
+                this.platformY = 0; // Platform is at Y = 0
+            },
+            
+            createRandomObstacle: function() {
+                // All obstacles are now red spheres
+                const color = '#FF0000'; // Red color
+                
+                // Random sphere radius (0.25 to 1.25)
+                const radius = 0.25 + Math.random() * 1.0;
+                
+                const startX = -8 + Math.random() * 16;
+                const startZ = -12;
+                
+                // Position sphere so it sits ON TOP of the platform
+                // Sphere center should be at platformY + radius (so bottom touches platform)
+                const objectY = this.platformY + radius;
+                
+                const obstacle = document.createElement('a-entity');
+                const obstacleId = `obstacle-${this.obstacleId++}`;
+                obstacle.setAttribute('id', obstacleId);
+                obstacle.setAttribute('position', `${startX} ${objectY} ${startZ}`);
+                
+                // Create red sphere
+                obstacle.setAttribute('geometry', `primitive: sphere; radius: ${radius}`);
+                obstacle.setAttribute('material', `color: ${color}`);
+                
+                // Store obstacle data for collision detection
+                const obstacleInfo = {
+                    id: obstacleId,
+                    x: startX,
+                    y: objectY,
+                    z: startZ,
+                    radius: radius, // Exact sphere radius
+                    height: radius * 2, // Sphere height is diameter
+                    speed: this.obstacleSpeed,
+                    shape: 'sphere'
+                };
+                
+                obstacleData.push(obstacleInfo);
+                
+                obstacle.setAttribute('obstacle-movement', `speed: ${this.obstacleSpeed}; obstacleId: ${obstacleId}`);
+                
+                this.el.appendChild(obstacle);
+                this.obstacles.push(obstacle);
+            },
+            
+            tick: function() {
+                if (!this.gameActive || !gameActive) return;
+                
+                this.spawnTimer++;
+                if (this.spawnTimer >= this.spawnInterval) {
+                    this.createRandomObstacle();
+                    this.spawnTimer = 0;
+                    
+                    if (this.spawnInterval > 60) {
+                        this.spawnInterval -= 1;
+                    }
+                }
+                
+                this.obstacles = this.obstacles.filter(obstacle => {
+                    const pos = obstacle.getAttribute('position');
+                    if (pos.z > 15) {
+                        // Remove from obstacleData too
+                        const obstacleId = obstacle.getAttribute('id');
+                        obstacleData = obstacleData.filter(data => data.id !== obstacleId);
+                        obstacle.remove();
+                        return false;
+                    }
+                    return true;
+                });
+            }
+        });
+
+        // Individual Obstacle Movement Component
+        AFRAME.registerComponent('obstacle-movement', {
+            schema: {
+                speed: {type: 'number', default: 0.08},
+                obstacleId: {type: 'string', default: ''}
+            },
+            
+            tick: function() {
+                if (!gameActive) return;
+                
+                let position = this.el.getAttribute('position');
+                position.z += this.data.speed;
+                this.el.setAttribute('position', position);
+                
+                // Update stored obstacle data
+                const obstacleInfo = obstacleData.find(data => data.id === this.data.obstacleId);
+                if (obstacleInfo) {
+                    obstacleInfo.z = position.z;
+                    obstacleInfo.y = position.y;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
