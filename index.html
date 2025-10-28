@@ -139,7 +139,7 @@
         #restartButton {
             padding: 15px 30px;
             font-size: 20px;
-            background-color: #FF6B6B;
+            background-color: #FF00FF;
             color: white;
             border: none;
             border-radius: 10px;
@@ -147,7 +147,7 @@
         }
         
         #restartButton:hover {
-            background-color: #FF5252;
+            background-color: #00FFFF;
         }
         
         #gameUI {
@@ -172,12 +172,12 @@
         <h2>Survive as long as you can!</h2>
         
         <div class="objective">
-            <h3>🎯 OBJECTIVE</h3>
+            <h3>🎯 OBJECTIVE 🎯</h3>
             <p>Dodge the incoming red spheres and stay on the platform! The longer you survive, the more challenging it becomes. How long can you last?</p>
         </div>
         
         <div class="controls">
-            <h3>🎮 CONTROLS</h3>
+            <h3>🎮 CONTROLS 🎮</h3>
             <div class="control-item">
                 <span>Move Left</span>
                 <span class="key">A</span>
@@ -207,9 +207,9 @@
     <!-- Game Over Screen -->
     <div id="gameOverScreen">
         <h1>GAME OVER!</h1>
-        <p id="gameOverReason">You fell off the platform!</p>
+        <p id="gameOverReason">You fell!</p>
         <div id="survivedTime">You survived for: 0.0 seconds</div>
-        <button id="restartButton" onclick="restartGame()">Play Again</button>
+        <button id="restartButton" onclick="restartGame()">Try Again</button>
     </div>
 
     <a-scene background="color: #77CEEB">
@@ -222,7 +222,7 @@
             <a-capsule position="0 0 0" 
                        radius="0.3" 
                        height="1.6" 
-                       color="#FF6B6B"
+                       color="#000000"
                        id="playerBody">
             </a-capsule>
             
@@ -244,7 +244,7 @@
         <a-entity id="obstacleContainer" obstacle-spawner></a-entity>
         
         <!-- Lighting -->
-        <a-light type="ambient" color="#404040"></a-light>
+        <a-light type="ambient" color="#414141"></a-light>
         <a-light type="directional" 
                  position="5 10 5" 
                  color="#ffffff"
